@@ -58,6 +58,27 @@ class ReformerE2ETest(absltest.TestCase):
     output_dir = self.create_tempdir().full_path
     _ = trainer_lib.train(output_dir=output_dir)
 
+  def test_reformer_wmt_ende_tf(self):
+    trax.fastmath.disable_jit()
+
+    batch_size_per_device = 2
+    steps = 1
+    n_layers = 2
+    d_ff = 32
+
+    gin.parse_config_file(os.path.join(_CONFIG_DIR, 'reformer_wmt_ende.gin'))
+
+    gin.bind_parameter('data_streams.data_dir', _TESTDATA)
+    gin.bind_parameter('batcher.batch_size_per_device', batch_size_per_device)
+    gin.bind_parameter('train.steps', steps)
+    gin.bind_parameter('Reformer.n_encoder_layers', n_layers)
+    gin.bind_parameter('Reformer.n_decoder_layers', n_layers)
+    gin.bind_parameter('Reformer.d_ff', d_ff)
+
+    with trax.math.use_backend('tf'):
+      with self.tmp_dir() as output_dir:
+        _ = trainer_lib.train(output_dir=output_dir)
+
   def test_reformer2_wmt_ende(self):
     trax.fastmath.disable_jit()
 
